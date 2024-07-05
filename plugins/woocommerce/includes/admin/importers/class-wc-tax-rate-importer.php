@@ -72,37 +72,38 @@ class WC_Tax_Rate_Importer extends WP_Importer {
 	 */
 	public function dispatch() {
 
-		$this->header();
+		$this->header(); //1
 
-		$step = empty( $_GET['step'] ) ? 0 : (int) $_GET['step'];
+		$step = empty( $_GET['step'] ) ? 0 : (int) $_GET['step']; //2 && 3
 
 		switch ( $step ) {
 
-			case 0:
-				$this->greet();
-				break;
+			case 0://4
+				$this->greet();//5
+				break;//6
 
-			case 1:
-				check_admin_referer( 'import-upload' );
+			case 1://7
+				check_admin_referer( 'import-upload' );//8
 
-				if ( $this->handle_upload() ) {
+				if ( $this->handle_upload() ) {//9
 
-					if ( $this->id ) {
-						$file = get_attached_file( $this->id );
+					if ( $this->id ) {//10
+						$file = get_attached_file( $this->id );//11
 					} else {
-						$file = ABSPATH . $this->file_url;
+						$file = ABSPATH . $this->file_url;//12
 					}
 
-					add_filter( 'http_request_timeout', array( $this, 'bump_request_timeout' ) );
+					add_filter( 'http_request_timeout',
+					 array( $this, 'bump_request_timeout' ) );//13
 
-					$this->import( $file );
+					$this->import( $file );//14
 				} else {
-					$this->import_error( $this->import_error_message );
+					$this->import_error( $this->import_error_message );//15
 				}
-				break;
+				break;//16
 		}
 
-		$this->footer();
+		$this->footer();//17
 	}
 
 	/**
@@ -134,26 +135,28 @@ class WC_Tax_Rate_Importer extends WP_Importer {
 	 * @param mixed $file File.
 	 */
 	public function import( $file ) {
-		if ( ! is_file( $file ) ) {
-			$this->import_error( __( 'The file does not exist, please try again.', 'woocommerce' ) );
+		if ( ! is_file( $file ) ) { //1
+			$this->import_error( __( 'The file does not exist, please try again.'
+			, 'woocommerce' ) );//2
 		}
 
-		$this->import_start();
+		$this->import_start();//3
 
-		$loop   = 0;
-		$handle = fopen( $file, 'r' );
+		$loop   = 0;//4
+		$handle = fopen( $file, 'r' );//5
 
-		if ( false !== $handle ) {
+		if ( false !== $handle ) {//6
 
-			$header = fgetcsv( $handle, 0, $this->delimiter );
-			$count  = is_countable( $header ) ? count( $header ) : 0;
-			if ( 10 === $count ) {
+			$header = fgetcsv( $handle, 0, $this->delimiter );//7
+			$count  = is_countable( $header ) ? count( $header ) : 0;//8 , 9 
+			if ( 10 === $count ) {//10
 
-				$row = fgetcsv( $handle, 0, $this->delimiter );
+				$row = fgetcsv( $handle, 0, $this->delimiter ); //11
 
-				while ( false !== $row ) {
+				while ( false !== $row ) { //12
 
-					list( $country, $state, $postcode, $city, $rate, $name, $priority, $compound, $shipping, $class ) = $row;
+					list( $country, $state, $postcode, $city, $rate
+					, $name, $priority, $compound, $shipping, $class ) = $row; //13
 
 					$tax_rate = array(
 						'tax_rate_country'  => $country,
@@ -165,19 +168,19 @@ class WC_Tax_Rate_Importer extends WP_Importer {
 						'tax_rate_shipping' => $shipping ? 1 : 0,
 						'tax_rate_order'    => $loop ++,
 						'tax_rate_class'    => $class,
-					);
+					);//14
 
-					$tax_rate_id = WC_Tax::_insert_tax_rate( $tax_rate );
-					WC_Tax::_update_tax_rate_postcodes( $tax_rate_id, wc_clean( $postcode ) );
-					WC_Tax::_update_tax_rate_cities( $tax_rate_id, wc_clean( $city ) );
+					$tax_rate_id = WC_Tax::_insert_tax_rate( $tax_rate );//15
+					WC_Tax::_update_tax_rate_postcodes( $tax_rate_id, wc_clean( $postcode ) );//16
+					WC_Tax::_update_tax_rate_cities( $tax_rate_id, wc_clean( $city ) );//17
 
-					$row = fgetcsv( $handle, 0, $this->delimiter );
+					$row = fgetcsv( $handle, 0, $this->delimiter );//18
 				}
 			} else {
-				$this->import_error( __( 'The CSV is invalid.', 'woocommerce' ) );
+				$this->import_error( __( 'The CSV is invalid.', 'woocommerce' ) );//19
 			}
 
-			fclose( $handle );
+			fclose( $handle );//20
 		}
 
 		// Show Result.
